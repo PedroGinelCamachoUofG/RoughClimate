@@ -2,10 +2,11 @@
 import random
 import math
 import logic
+import display
 from functools import reduce
 from operator import add
 city_names = ["Tokyo", "Delhi", "Shanghai", "Sao Paulo", "Mexico City", "Cairo", "Mumbai", "Beijing", "Dhaka", "Osaka", "New York", "Karachi", "Buenos Aires", "Chongqing", "Istanbul", "Kolkata", "Manila", "Lagos", "Rio de Janeiro", "Tianjin", "Kinshasa", "Guangzhou", "Los Angeles", "Moscow", "Shenzhen", "Lahore", "Bangalore", "Paris", "Bogota", "Jakarta", "Chennai", "Lima", "Bangkok", "Seoul", "Nagoya", "Hyderabad", "London", "Tehran", "Chicago", "Luanda", "Kuala Lumpur", "Riyadh", "Madrid", "Dar es Salaam", "Singapore", "Khartoum", "Alexandria", "Yangon", "Guadalajara", "Glasgow"]
-country_names = ["Moldova", "Greater Albania", "Coah"]
+country_names = ["Moldova", "Greater Albania", "Ivan"]
 disasters = ["Flood", "Hurricane", "Heatwave"]
 
 def clamp(number, min=-100, max=0) -> int:
@@ -23,6 +24,8 @@ class Game:
     def __init__(self, city_num) -> None:
         self.cities = self.setup_cities(city_num)
         self.round_num = 0
+        self.window = display.Window("Game", (700, 450))
+        self.window.setup_circular(self.cities)
         
     def setup_cities(city_num) -> dict:
         # State is hardcoded now but could be edited or randomized
@@ -74,6 +77,7 @@ class Game:
         return True
 
     def trigger_first(self) -> None:
+        print(f"START Round {self.round_num}")
         for city in self.cities.items():
             city.first_action(self)
 
@@ -84,6 +88,8 @@ class Game:
     def trigger_last(self) -> None:
         for city in self.cities.items():
             city.last_action(self)
+        print(f"END Round {self.round_num}")
+        self.round_num += 1
 
     def trigger_climate(self) -> None:
         threshold = random.randint(0,25) * self.round_num
@@ -112,7 +118,7 @@ class Game:
             city.food -= city.population
 
     def draw(self) -> None:
-        pass
+        self.window.draw()
 
 
 class City:
@@ -148,6 +154,11 @@ class City:
         # Misc
         self.building_done = False
         self.infrastructure_used = 0
+        # Display
+        self.display_object = None
+
+    def setup_display(self, x, y) -> None:
+        self.display_object = display.DCity(x, y, self.name, None, ord_add(self.country))
 
     def get_connections(self) -> dict:
         return self.connections
@@ -290,7 +301,7 @@ class City:
         return event.type, event.severity
 
     def draw(self):
-        pass
+        self.display_object.draw(self.win, self.is_alive)
 
 class Disaster:
 
